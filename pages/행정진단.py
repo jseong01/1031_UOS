@@ -11,8 +11,9 @@ st.title("🛠️ 행정 우선 개선 진단")
 st.caption("자치구별로 만족도에 부정적 영향을 주는 주요 요인을 확인합니다.")
 
 # ---------------- 데이터 불러오기 ----------------
-DATA_DIR = Path("C:/Users/user/Desktop/streamlit")
-C_FILE = DATA_DIR / "중요도 정규화.csv"
+# BASE_DIR = 현재 파일(pages/행정진단.py)의 상위 폴더 (streamlit/)
+BASE_DIR = Path(__file__).resolve().parent.parent
+C_FILE = BASE_DIR / "중요도 정규화.csv"
 
 VARS = [
     "교통이용만족도_평균","보행환경만족도_주거지역","녹지현황(개소)","상수도요금평단",
@@ -39,7 +40,6 @@ C_norm = load_influence(C_FILE)
 # ---------------- 옵션 ----------------
 st.sidebar.header("⚙️ 옵션")
 top_k = st.sidebar.slider("상위 음수 변수 개수", 1, 10, 5)
-# 필요시 사용하려고 남겨둠 (현재 표에는 값 표시 안 함)
 
 # ---------------- 음수 기여 상위 K ----------------
 neg_long = (
@@ -49,7 +49,6 @@ neg_long = (
 neg_long = neg_long[neg_long["기여도"] < 0].copy()
 neg_long["절댓값"] = neg_long["기여도"].abs()
 
-# 전체용 (사용 여부와 무관, 유지)
 top_neg = (
     neg_long.sort_values(["구","절댓값"], ascending=[True, False])
              .groupby("구", as_index=False)
@@ -63,7 +62,7 @@ selected_gu = st.sidebar.selectbox("자치구 선택", gu_list)
 sel_topk = (
     neg_long.loc[neg_long["구"] == selected_gu]
             .sort_values("절댓값", ascending=False)
-            .head(top_k)[["변수"]]     # 값 컬럼 제거
+            .head(top_k)[["변수"]]
     .reset_index(drop=True)
 )
 sel_topk.index = sel_topk.index + 1
